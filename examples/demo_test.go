@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	go_sdk "github.com/Mannymz/ZenNLP/tree/main/go-sdk"
+	go_sdk "github.com/Mannymz/ZenNLP/go-sdk"
 )
 
 // Note: These tests require the NLP server to be running
