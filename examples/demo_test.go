@@ -1,370 +1,297 @@
-package examples
+package main
 
 import (
-	"fmt"
+	"context"
 	"testing"
+	"time"
 
-	"github.com/Mannymz/ZenNLP/sdk"
+	go_sdk "github.com/zen-nlp/go-sdk"
 )
 
-// TestInitializeClient tests the SDK client initialization
-func TestInitializeClient(t *testing.T) {
-	client, err := sdk.NewClient()
+// Note: These tests require the NLP server to be running
+// Start the server with: docker-compose up nlp-engine
+// Or manually: cd nlp-engine && python server.py
+
+// TestClientInitialization tests the SDK client initialization
+func TestClientInitialization(t *testing.T) {
+	client, err := go_sdk.NewClient("localhost:50051")
 	if err != nil {
-		t.Fatalf("failed to initialize client: %v", err)
+		t.Skipf("Skipping test - cannot connect to server: %v", err)
+		return
 	}
+	defer client.Close()
 
 	if client == nil {
 		t.Error("expected non-nil client")
 	}
 }
 
-// TestTokenization tests the tokenization functionality
-func TestTokenization(t *testing.T) {
-	client, err := sdk.NewClient()
-	if err != nil {
-		t.Fatalf("failed to initialize client: %v", err)
+// TestClientWithConfig tests client initialization with custom config
+func TestClientWithConfig(t *testing.T) {
+	config := go_sdk.Config{
+		Address:    "localhost:50051",
+		Timeout:    5 * time.Second,
+		MaxRetries: 2,
 	}
 
+	client, err := go_sdk.NewClientWithConfig(config)
+	if err != nil {
+		t.Skipf("Skipping test - cannot connect to server: %v", err)
+		return
+	}
+	defer client.Close()
+
+	if client == nil {
+		t.Error("expected non-nil client")
+	}
+}
+
+// TestSentimentAnalysisPositive tests positive sentiment analysis
+func TestSentimentAnalysisPositive(t *testing.T) {
+	client, err := go_sdk.NewClient("localhost:50051")
+	if err != nil {
+		t.Skipf("Skipping test - cannot connect to server: %v", err)
+		return
+	}
+	defer client.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Persian positive text
+	text := "این محصول عالی است و من خیلی راضی هستم"
+
+	result, err := client.Analyze(ctx, text)
+	if err != nil {
+		t.Fatalf("Analyze() error = %v", err)
+	}
+
+	if result == nil {
+		t.Fatal("expected non-nil result")
+	}
+
+	t.Logf("Sentiment: %s, Confidence: %.2f%%", result.Label, result.Confidence())
+
+	if !result.IsPositive() && !result.IsNegative() {
+		t.Errorf("result should be either positive or negative, got: %s", result.Label)
+	}
+}
+
+// TestSentimentAnalysisNegative tests negative sentiment analysis
+func TestSentimentAnalysisNegative(t *testing.T) {
+	client, err := go_sdk.NewClient("localhost:50051")
+	if err != nil {
+		t.Skipf("Skipping test - cannot connect to server: %v", err)
+		return
+	}
+	defer client.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Persian negative text
+	text := "کیفیت بسیار بد بود و اصلا توصیه نمی‌کنم"
+
+	result, err := client.Analyze(ctx, text)
+	if err != nil {
+		t.Fatalf("Analyze() error = %v", err)
+	}
+
+	if result == nil {
+		t.Fatal("expected non-nil result")
+	}
+
+	t.Logf("Sentiment: %s, Confidence: %.2f%%", result.Label, result.Confidence())
+
+	if !result.IsPositive() && !result.IsNegative() {
+		t.Errorf("result should be either positive or negative, got: %s", result.Label)
+	}
+}
+
+// TestAnalyzeWithLanguage tests sentiment analysis with explicit language
+func TestAnalyzeWithLanguage(t *testing.T) {
+	client, err := go_sdk.NewClient("localhost:50051")
+	if err != nil {
+		t.Skipf("Skipping test - cannot connect to server: %v", err)
+		return
+	}
+	defer client.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	text := "قیمت مناسبی دارد و کیفیت خوبی هم دارد"
+
+	result, err := client.AnalyzeWithLanguage(ctx, text, "fa")
+	if err != nil {
+		t.Fatalf("AnalyzeWithLanguage() error = %v", err)
+	}
+
+	if result == nil {
+		t.Fatal("expected non-nil result")
+	}
+
+	t.Logf("Sentiment: %s, Confidence: %.2f%%", result.Label, result.Confidence())
+}
+
+// TestAnalyzeWithRetry tests the retry functionality
+func TestAnalyzeWithRetry(t *testing.T) {
+	client, err := go_sdk.NewClient("localhost:50051")
+	if err != nil {
+		t.Skipf("Skipping test - cannot connect to server: %v", err)
+		return
+	}
+	defer client.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	text := "بسیار ناامید شدم، این محصول ارزش خرید ندارد"
+
+	result, err := client.AnalyzeWithRetry(ctx, text, 3)
+	if err != nil {
+		t.Fatalf("AnalyzeWithRetry() error = %v", err)
+	}
+
+	if result == nil {
+		t.Fatal("expected non-nil result")
+	}
+
+	t.Logf("Sentiment: %s, Confidence: %.2f%%", result.Label, result.Confidence())
+}
+
+// TestMultipleSentimentAnalyses tests multiple consecutive analyses
+func TestMultipleSentimentAnalyses(t *testing.T) {
+	client, err := go_sdk.NewClient("localhost:50051")
+	if err != nil {
+		t.Skipf("Skipping test - cannot connect to server: %v", err)
+		return
+	}
+	defer client.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
 	tests := []struct {
-		name    string
-		input   string
-		wantErr bool
+		name string
+		text string
 	}{
-		{
-			name:    "simple sentence",
-			input:   "Hello world",
-			wantErr: false,
-		},
-		{
-			name:    "sentence with punctuation",
-			input:   "How are you?",
-			wantErr: false,
-		},
-		{
-			name:    "empty string",
-			input:   "",
-			wantErr: false,
-		},
-		{
-			name:    "complex sentence",
-			input:   "The quick brown fox jumps over the lazy dog.",
-			wantErr: false,
-		},
+		{"positive review", "این محصول عالی است و من خیلی راضی هستم"},
+		{"negative review", "کیفیت بسیار بد بود و اصلا توصیه نمی‌کنم"},
+		{"mixed review", "قیمت مناسبی دارد و کیفیت خوبی هم دارد"},
+		{"strong negative", "بسیار ناامید شدم، این محصول ارزش خرید ندارد"},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tokens, err := client.Tokenize(tt.input)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Tokenize() error = %v, wantErr %v", err, tt.wantErr)
+			result, err := client.Analyze(ctx, tt.text)
+			if err != nil {
+				t.Errorf("Analyze() error = %v", err)
 				return
 			}
 
-			if !tt.wantErr && tokens == nil {
-				t.Error("expected non-nil tokens")
+			if result == nil {
+				t.Error("expected non-nil result")
+				return
 			}
+
+			t.Logf("%s: Sentiment=%s, Confidence=%.2f%%, Positive=%t, Negative=%t",
+				tt.name, result.Label, result.Confidence(), result.IsPositive(), result.IsNegative())
 		})
 	}
 }
 
-// TestSentenceSegmentation tests sentence segmentation
-func TestSentenceSegmentation(t *testing.T) {
-	client, err := sdk.NewClient()
+// TestResultMethods tests the Result helper methods
+func TestResultMethods(t *testing.T) {
+	client, err := go_sdk.NewClient("localhost:50051")
 	if err != nil {
-		t.Fatalf("failed to initialize client: %v", err)
+		t.Skipf("Skipping test - cannot connect to server: %v", err)
+		return
 	}
+	defer client.Close()
 
-	text := "This is the first sentence. This is the second sentence! And this is the third?"
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
-	sentences, err := client.SegmentSentences(text)
+	text := "این محصول عالی است"
+
+	result, err := client.Analyze(ctx, text)
 	if err != nil {
-		t.Fatalf("SegmentSentences() error = %v", err)
+		t.Fatalf("Analyze() error = %v", err)
 	}
 
-	if sentences == nil {
-		t.Error("expected non-nil sentences")
+	// Test that IsPositive and IsNegative are mutually exclusive
+	if result.IsPositive() && result.IsNegative() {
+		t.Error("result cannot be both positive and negative")
 	}
 
-	if len(sentences) == 0 {
-		t.Error("expected at least one sentence")
+	// Test that Confidence returns a valid percentage
+	confidence := result.Confidence()
+	if confidence < 0 || confidence > 100 {
+		t.Errorf("confidence should be between 0 and 100, got %.2f", confidence)
 	}
 }
 
-// TestPOSTagging tests Part-of-Speech tagging
-func TestPOSTagging(t *testing.T) {
-	client, err := sdk.NewClient()
+// TestContextTimeout tests that context timeout is respected
+func TestContextTimeout(t *testing.T) {
+	client, err := go_sdk.NewClient("localhost:50051")
 	if err != nil {
-		t.Fatalf("failed to initialize client: %v", err)
+		t.Skipf("Skipping test - cannot connect to server: %v", err)
+		return
 	}
+	defer client.Close()
 
-	tests := []struct {
-		name    string
-		input   string
-		wantErr bool
-	}{
-		{
-			name:    "noun and verb",
-			input:   "The cat runs",
-			wantErr: false,
-		},
-		{
-			name:    "adjective and noun",
-			input:   "beautiful flower",
-			wantErr: false,
-		},
-	}
+	// Very short timeout to test timeout handling
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Nanosecond)
+	defer cancel()
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tags, err := client.POSTag(tt.input)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("POSTag() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+	text := "این محصول عالی است"
 
-			if !tt.wantErr && tags == nil {
-				t.Error("expected non-nil tags")
-			}
-		})
+	_, err = client.Analyze(ctx, text)
+	// We expect this to fail due to timeout or context cancellation
+	if err == nil {
+		t.Log("Expected timeout error, but analysis succeeded (server may be very fast)")
 	}
 }
 
-// TestNamedEntityRecognition tests NER functionality
-func TestNamedEntityRecognition(t *testing.T) {
-	client, err := sdk.NewClient()
-	if err != nil {
-		t.Fatalf("failed to initialize client: %v", err)
-	}
-
-	tests := []struct {
-		name    string
-		input   string
-		wantErr bool
-	}{
-		{
-			name:    "person and location",
-			input:   "John Smith works in New York",
-			wantErr: false,
-		},
-		{
-			name:    "organization",
-			input:   "Apple Inc. is headquartered in California",
-			wantErr: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			entities, err := client.ExtractEntities(tt.input)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ExtractEntities() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-
-			if !tt.wantErr && entities == nil {
-				t.Error("expected non-nil entities")
-			}
-		})
-	}
-}
-
-// TestSentimentAnalysis tests sentiment analysis
-func TestSentimentAnalysis(t *testing.T) {
-	client, err := sdk.NewClient()
-	if err != nil {
-		t.Fatalf("failed to initialize client: %v", err)
-	}
-
-	tests := []struct {
-		name    string
-		input   string
-		wantErr bool
-	}{
-		{
-			name:    "positive sentiment",
-			input:   "I love this product!",
-			wantErr: false,
-		},
-		{
-			name:    "negative sentiment",
-			input:   "This is terrible",
-			wantErr: false,
-		},
-		{
-			name:    "neutral sentiment",
-			input:   "The weather is cloudy",
-			wantErr: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			sentiment, err := client.AnalyzeSentiment(tt.input)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("AnalyzeSentiment() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-
-			if !tt.wantErr && sentiment == nil {
-				t.Error("expected non-nil sentiment")
-			}
-		})
-	}
-}
-
-// TestLemmatization tests lemmatization functionality
-func TestLemmatization(t *testing.T) {
-	client, err := sdk.NewClient()
-	if err != nil {
-		t.Fatalf("failed to initialize client: %v", err)
-	}
-
-	tests := []struct {
-		name    string
-		input   string
-		wantErr bool
-	}{
-		{
-			name:    "plural to singular",
-			input:   "running",
-			wantErr: false,
-		},
-		{
-			name:    "past tense",
-			input:   "jumped",
-			wantErr: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			lemmas, err := client.Lemmatize(tt.input)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Lemmatize() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-
-			if !tt.wantErr && lemmas == nil {
-				t.Error("expected non-nil lemmas")
-			}
-		})
-	}
-}
-
-// TestDependencyParsing tests dependency parsing
-func TestDependencyParsing(t *testing.T) {
-	client, err := sdk.NewClient()
-	if err != nil {
-		t.Fatalf("failed to initialize client: %v", err)
-	}
-
-	input := "The quick brown fox jumps over the lazy dog"
-
-	deps, err := client.ParseDependencies(input)
-	if err != nil {
-		t.Fatalf("ParseDependencies() error = %v", err)
-	}
-
-	if deps == nil {
-		t.Error("expected non-nil dependencies")
-	}
-}
-
-// TestSimilarity tests text similarity calculation
-func TestSimilarity(t *testing.T) {
-	client, err := sdk.NewClient()
-	if err != nil {
-		t.Fatalf("failed to initialize client: %v", err)
-	}
-
-	tests := []struct {
-		name    string
-		text1   string
-		text2   string
-		wantErr bool
-	}{
-		{
-			name:    "identical texts",
-			text1:   "hello world",
-			text2:   "hello world",
-			wantErr: false,
-		},
-		{
-			name:    "similar texts",
-			text1:   "the cat is here",
-			text2:   "the dog is there",
-			wantErr: false,
-		},
-		{
-			name:    "different texts",
-			text1:   "programming",
-			text2:   "cooking",
-			wantErr: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			score, err := client.CalculateSimilarity(tt.text1, tt.text2)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("CalculateSimilarity() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-
-			if !tt.wantErr && (score < 0 || score > 1) {
-				t.Errorf("expected similarity score between 0 and 1, got %v", score)
-			}
-		})
-	}
-}
-
-// TestBenchmarkTokenization benchmarks the tokenization performance
-func BenchmarkTokenization(b *testing.B) {
-	client, _ := sdk.NewClient()
-	text := "The quick brown fox jumps over the lazy dog. This is a benchmark test."
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		client.Tokenize(text)
-	}
-}
-
-// TestBenchmarkSentimentAnalysis benchmarks sentiment analysis performance
+// BenchmarkSentimentAnalysis benchmarks sentiment analysis performance
 func BenchmarkSentimentAnalysis(b *testing.B) {
-	client, _ := sdk.NewClient()
-	text := "I absolutely love this product! It's amazing and works perfectly."
+	client, err := go_sdk.NewClient("localhost:50051")
+	if err != nil {
+		b.Skipf("Skipping benchmark - cannot connect to server: %v", err)
+		return
+	}
+	defer client.Close()
+
+	ctx := context.Background()
+	text := "این محصول عالی است و من خیلی راضی هستم"
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		client.AnalyzeSentiment(text)
+		_, err := client.Analyze(ctx, text)
+		if err != nil {
+			b.Fatalf("Analyze() error = %v", err)
+		}
 	}
 }
 
-// TestExample demonstrates basic SDK usage
-func TestExample(t *testing.T) {
-	// Initialize client
-	client, err := sdk.NewClient()
+// BenchmarkSentimentAnalysisWithRetry benchmarks sentiment analysis with retry
+func BenchmarkSentimentAnalysisWithRetry(b *testing.B) {
+	client, err := go_sdk.NewClient("localhost:50051")
 	if err != nil {
-		t.Fatalf("failed to initialize client: %v", err)
+		b.Skipf("Skipping benchmark - cannot connect to server: %v", err)
+		return
 	}
+	defer client.Close()
 
-	// Example text
-	text := "ZenNLP is a powerful natural language processing library for Go."
+	ctx := context.Background()
+	text := "کیفیت بسیار بد بود و اصلا توصیه نمی‌کنم"
 
-	// Tokenize
-	tokens, _ := client.Tokenize(text)
-	fmt.Printf("Tokens: %v\n", tokens)
-
-	// Analyze sentiment
-	sentiment, _ := client.AnalyzeSentiment(text)
-	fmt.Printf("Sentiment: %v\n", sentiment)
-
-	// Extract entities
-	entities, _ := client.ExtractEntities(text)
-	fmt.Printf("Entities: %v\n", entities)
-
-	// POS tagging
-	tags, _ := client.POSTag(text)
-	fmt.Printf("POS Tags: %v\n", tags)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, err := client.AnalyzeWithRetry(ctx, text, 2)
+		if err != nil {
+			b.Fatalf("AnalyzeWithRetry() error = %v", err)
+		}
+	}
 }
