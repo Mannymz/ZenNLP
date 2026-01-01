@@ -230,5 +230,5 @@ MIT License - see LICENSE file for details.
 ## Support
 
 For issues and questions:
-- GitHub Issues: [Create an issue](https://github.com/zen-nlp/issues)
-- Documentation: [Wiki](https://github.com/zen-nlp/wiki)
+- GitHub Issues: [Create an issue](https://github.com/Mannymz/zen-nlp/issues)
+- Documentation: [Wiki](https://github.com/Mannymz/zen-nlp/wiki)
