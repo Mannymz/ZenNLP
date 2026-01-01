@@ -138,7 +138,7 @@ const file_api_nlp_proto_rawDesc = "" +
 	"\x05score\x18\x02 \x01(\x01R\x05score2O\n" +
 	"\n" +
 	"NLPManager\x12A\n" +
-	"\x10AnalyzeSentiment\x12\x15.nlp.SentimentRequest\x1a\x16.nlp.SentimentResponseB)Z'github.com/Mannymz/ZenNLP/apib\x06proto3"
+	"\x10AnalyzeSentiment\x12\x15.nlp.SentimentRequest\x1a\x16.nlp.SentimentResponseB\x1fZ\x1dgithub.com/Mannymz/ZenNLP/apib\x06proto3"
 
 var (
 	file_api_nlp_proto_rawDescOnce sync.Once

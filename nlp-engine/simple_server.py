@@ -29,7 +29,7 @@ def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     nlp_pb2_grpc.add_NLPManagerServicer_to_server(NLPManagerServicer(), server)
     
-    server.add_insecure_port('[::]:50051')
+    server.add_insecure_port('localhost:50051')
     logging.info("Starting gRPC server on port 50051")
     
     server.start()

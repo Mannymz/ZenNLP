@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package nlp;
 
-option go_package = "github.com/zen-nlp/api";
+option go_package = "github.com/Mannymz/ZenNLP/api";
 
 service NLPManager {
     rpc AnalyzeSentiment(SentimentRequest) returns (SentimentResponse);
