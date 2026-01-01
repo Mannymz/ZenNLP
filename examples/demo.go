@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/zen-nlp/go-sdk"
+	"github.com/Mannymz/ZenNLP/go-sdk"
 )
 
 func main() {

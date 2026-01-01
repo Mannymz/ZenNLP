@@ -35,7 +35,7 @@ import (
     "fmt"
     "log"
     
-    "github.com/zen-nlp/go-sdk"
+    "github.com/Mannymz/ZenNLP/go-sdk"
 )
 
 func main() {

@@ -1,4 +1,4 @@
-module github.com/zen-nlp/api
+module github.com/Mannymz/ZenNLP/api
 
 go 1.21
 

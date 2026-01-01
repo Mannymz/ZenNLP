@@ -34,8 +34,8 @@ ZenNLP is a high-performance, production-ready NLP service that combines Go's co
 
 **Solution:**
 - Updated `examples/go.mod` with proper local replace directives
-- Added `replace github.com/zen-nlp/go-sdk => ../go-sdk`
-- Added `replace github.com/zen-nlp/api => ../api`
+- Added `replace github.com/Mannymz/ZenNLP/go-sdk => ../go-sdk`
+- Added `replace github.com/Mannymz/ZenNLP/api => ../api`
 - Updated all dependencies to consistent versions
 
 **Files Modified:**
@@ -45,7 +45,7 @@ ZenNLP is a high-performance, production-ready NLP service that combines Go's co
 
 **Problem:**
 - `examples/demo_test.go` referenced non-existent SDK methods
-- Tests imported wrong module path (`github.com/Mannymz/ZenNLP/sdk` instead of `github.com/zen-nlp/go-sdk`)
+- Tests imported wrong module path (`github.com/Mannymz/ZenNLP/sdk` instead of `github.com/Mannymz/ZenNLP/go-sdk`)
 - Test functions called methods that don't exist in the actual SDK (Tokenize, SegmentSentences, POSTag, etc.)
 
 **Solution:**
