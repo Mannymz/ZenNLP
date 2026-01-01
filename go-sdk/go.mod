@@ -1,10 +1,10 @@
-module github.com/Mannymz/ZenNLP/go-sdk
+module github.com/Mannymz/ZenNLP/tree/main//go-sdk
 
 go 1.21
 
-require github.com/Mannymz/ZenNLP/api v0.0.0
+require github.com/Mannymz/ZenNLP/tree/main//api v0.0.0
 
-replace github.com/Mannymz/ZenNLP/api => ../api
+replace github.com/Mannymz/ZenNLP/tree/main//api => ../api
 
 require google.golang.org/grpc v1.58.0
 

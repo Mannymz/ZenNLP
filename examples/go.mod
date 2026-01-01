@@ -1,19 +1,19 @@
-module github.com/Mannymz/ZenNLP/examples
+module github.com/Mannymz/ZenNLP/tree/main//examples
 
 go 1.21
 
 require (
-	github.com/Mannymz/ZenNLP/go-sdk v0.0.0
+	github.com/Mannymz/ZenNLP/tree/main//go-sdk v0.0.0
 	google.golang.org/grpc v1.60.0
 )
 
-replace github.com/Mannymz/ZenNLP/go-sdk => ../go-sdk
+replace github.com/Mannymz/ZenNLP/tree/main//go-sdk => ../go-sdk
 
-replace github.com/Mannymz/ZenNLP/api => ../api
+replace github.com/Mannymz/ZenNLP/tree/main//api => ../api
 
 require (
 	github.com/golang/protobuf v1.5.3 // indirect
-	github.com/Mannymz/ZenNLP/api v0.0.0 // indirect
+	github.com/Mannymz/ZenNLP/tree/main//api v0.0.0 // indirect
 	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/sys v0.13.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
