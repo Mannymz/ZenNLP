@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package nlp;
+
+option go_package = "github.com/zen-nlp/api";
+
+service NLPManager {
+    rpc AnalyzeSentiment(SentimentRequest) returns (SentimentResponse);
+}
+
+message SentimentRequest {
+    string text = 1;
+    string lang = 2;
+}
+
+message SentimentResponse {
+    string label = 1;
+    double score = 2;
+}

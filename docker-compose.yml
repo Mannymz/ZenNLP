@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  nlp-engine:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "50051:50051"
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import grpc; import nlp_pb2_grpc; print('OK')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Example Go client service (optional)
+  go-client:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    depends_on:
+      nlp-engine:
+        condition: service_healthy
+    environment:
+      - NLP_SERVER_ADDRESS=nlp-engine:50051
+    restart: "no"
