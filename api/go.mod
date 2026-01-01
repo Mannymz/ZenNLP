@@ -1,4 +1,4 @@
-module github.com/Mannymz/ZenNLP/tree/main//api
+module github.com/Mannymz/ZenNLP/tree/main/api
 
 go 1.21
 

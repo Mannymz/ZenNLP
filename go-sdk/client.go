@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	pb "github.com/Mannymz/ZenNLP/tree/main//api"
+	pb "github.com/Mannymz/ZenNLP/tree/main/api"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
