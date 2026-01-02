@@ -9,9 +9,9 @@ proto: go-proto python-proto
 # Generate Go protobuf files
 go-proto:
 	@echo "Generating Go protobuf files..."
-	protoc --go_out=. --go_opt=paths=source_relative \
-		--go-grpc_out=. --go-grpc_opt=paths=source_relative \
-		api/nlp.proto
+	protoc --go_out=go-sdk/api --go_opt=paths=source_relative \
+		--go-grpc_out=go-sdk/api --go-grpc_opt=paths=source_relative \
+		go-sdk/api/nlp.proto
 	@echo "Go protobuf files generated successfully"
 
 # Generate Python protobuf files

@@ -52,13 +52,32 @@ A high-performance, production-ready NLP service that combines Go's concurrency 
    - Make
 
 2. **Build and Install:**
-   ```bash
-   make all
-   ```
+   - Ensure `protoc`, `protoc-gen-go`, and `protoc-gen-go-grpc` are installed and in your PATH. If not, refer to the [SETUP_INSTRUCTIONS.md](SETUP_INSTRUCTIONS.md) for detailed setup.
+   - From the project root, run:
+     ```bash
+     # Generate protobuf files
+     bin/protoc --go_out=go-sdk/api --go_opt=paths=source_relative \
+       --go-grpc_out=go-sdk/api --go-grpc_opt=paths=source_relative \
+       go-sdk/api/nlp.proto
+     python -m grpc_tools.protoc \
+       --proto_path=go-sdk/api \
+       --python_out=nlp-engine \
+       --grpc_python_out=nlp-engine \
+       go-sdk/api/nlp.proto
+     # Install Go dependencies
+     cd go-sdk && go mod tidy && go mod download
+     cd ..
+     cd examples && go mod tidy
+     cd ..
+     # Install Python dependencies
+     cd nlp-engine && pip install -r requirements.txt
+     cd ..
+     ```
 
 3. **Start the Server:**
    ```bash
-   make run-server
+   # From the project root
+   python nlp-engine/server.py
    ```
 
 4. **Test the Client:**
@@ -147,9 +166,11 @@ result, err := client.AnalyzeWithRetry(ctx, text, 3)
 
 ```
 ZenNLP/
-├── api/                    # Protocol buffer definitions
-│   └── nlp.proto          # gRPC service definition
 ├── go-sdk/                # Go client library
+│   ├── api/               # Protocol buffer definitions and generated Go files
+│   │   └── nlp.proto     # gRPC service definition
+│   │   └── nlp.pb.go     # Generated Go protobuf code
+│   │   └── nlp_grpc.pb.go # Generated Go gRPC code
 │   ├── go.mod            # Go module
 │   └── client.go         # Client implementation
 ├── nlp-engine/            # Python NLP server

@@ -6,7 +6,7 @@
 - grpcio, grpcio-tools, transformers, torch, numpy
 
 ✅ **Python Protobuf Files**: Generated successfully
-- nlp_pb2.py and nlp_pb2_grpc.py created in nlp-engine
+- `nlp_pb2.py` and `nlp_pb2_grpc.py` created in `nlp-engine/`
 
 ✅ **Go Modules**: Configured
 - api/, go-sdk/, and examples/ modules set up
@@ -20,45 +20,16 @@
 
 ### 1. Start the Python NLP Server
 ```bash
-cd nlp-engine
-python server.py
+# From the project root
+python nlp-engine/server.py
 ```
 
-### 2. Test with Go Client (Manual)
-Create a simple test file:
+### 2. Run Go Client Example
+Navigate to the `examples` directory and run `demo.go`:
 
-```go
-package main
-
-import (
-    "context"
-    "fmt"
-    "log"
-    
-    "github.com/Mannymz/ZenNLP/go-sdk"
-)
-
-func main() {
-    client, err := go_sdk.NewClient("localhost:50051")
-    if err != nil {
-        log.Fatal(err)
-    }
-    defer client.Close()
-    
-    result, err := client.Analyze(context.Background(), "این محصول عالی است")
-    if err != nil {
-        log.Printf("Error: %v (Server may not be running)", err)
-        return
-    }
-    
-    fmt.Printf("Sentiment: %s (Confidence: %.2f%%)\n", result.Label, result.Confidence())
-}
-```
-
-### 3. Run the Test
 ```bash
 cd examples
-go run your_test_file.go
+go run demo.go
 ```
 
 ## Docker Alternative (Recommended)
@@ -69,12 +40,12 @@ docker-compose up nlp-engine
 
 # In another terminal, test the client
 cd examples
-go run your_test_file.go
+go run demo.go
 ```
 
 ## Architecture
 
-- **Python Engine**: ParsBERT model for Persian sentiment analysis
+- **Python Engine**: ParsBERT model for Persian sentiment analysis (with `force_download=True` for robust model loading)
 - **Go SDK**: High-performance client with automatic retries
 - **gRPC**: Efficient communication protocol
 

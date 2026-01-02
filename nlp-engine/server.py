@@ -1,3 +1,8 @@
+import sys
+import os
+
+sys.path.append(os.path.dirname(__file__))
+
 import grpc
 import logging
 from concurrent import futures
@@ -13,8 +18,8 @@ class NLPManagerServicer(nlp_pb2_grpc.NLPManagerServicer):
     def __init__(self):
         logging.info("Loading ParsBERT model...")
         self.model_name = "HooshvareLab/bert-fa-base-uncased-sentiment-snappfood"
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-        self.model = AutoModelForSequenceClassification.from_pretrained(self.model_name)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name, force_download=True)
+        self.model = AutoModelForSequenceClassification.from_pretrained(self.model_name, force_download=True)
         self.labels = ["negative", "positive"]
         logging.info("Model loaded successfully")
     
